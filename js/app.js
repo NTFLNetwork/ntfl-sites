@@ -21,7 +21,56 @@ const state = {
 const DEFAULT_SETTINGS = {
   season_banner: { title: `${SEASON_LABEL} Week 1`, subtitle: APP_NAME },
   home_banner: { headline: "Where the NTFL collides", cta: "Commissioner Control Center" },
-  rules: { title: "League Rules", body: "Add your NTFL rules here." },
+  rules: {
+    title: "NTFL SEASON 3",
+    body: `OFFICIAL RULES & POLICIES
+
+JERSEYS & LOGOS
+
+• The Home Team has first choice of uniform selection. If the Home Team elects to wear a colored jersey, the Away Team must wear white, and vice versa.
+
+• Uniform selections must be submitted to the Commissioner before the weekly deadline. Failure to submit a request will result in the team's default Home/Away uniform being used.
+
+• Available logos and uniform options are based on NFL uniforms worn during the 2024-25 and 2025-26 seasons. Uniforms not worn during those seasons will not be available at the launch of Season 3 but may be added in future updates.
+
+• An official Uniform Directory will be provided listing all available Home, Away, Alternate, and Combo uniforms.
+
+ALTERNATE UNIFORMS
+
+• Alternate uniforms are intended to be used realistically and may not be excessively worn.
+
+• Each franchise is limited to four (4) Alternate Uniform appearances per season.
+
+• The four-use limit applies to all Alternate Uniforms combined, not each Alternate individually.
+
+• Teams are responsible for monitoring and managing their Alternate Uniform usage.
+
+UNIFORM COMBOS
+
+• A Uniform Combo is a combination of approved jerseys, pants, and socks used by the real NFL franchise.
+
+• Available Combo uniforms will be listed within the official Uniform Directory.
+
+ACCOUNT POLICY
+
+• Each franchise is permitted one (1) primary account and up to three (3) alternate accounts.
+
+• Use of accounts beyond the league limit may result in penalties determined by league administration.
+
+COMPETITIVE INTEGRITY
+
+• The purchasing, botting, or artificial inflation of likes, votes, views, or engagement is strictly prohibited.
+
+• Any engagement determined to be fraudulent will be removed from league records.
+
+• Coaches found responsible for engagement manipulation will be subject to disciplinary action in accordance with league protocol.
+
+• Fan accounts involved in engagement manipulation may face restrictions, removal, or other corrective actions as determined by league administration.
+
+LEAGUE AUTHORITY
+
+• NTFL Administration reserves the right to investigate suspicious activity, interpret league rules, and issue disciplinary action when necessary to preserve fairness, realism, and competitive integrity throughout the season.`
+  },
 };
 
 const TEAM_META = {
@@ -58,6 +107,42 @@ const TEAM_META = {
   titans: { name: "Tennessee Titans", abbr: "TEN", primary: "#0C2340", secondary: "#4B92DB" },
   commanders: { name: "Washington Commanders", abbr: "WAS", primary: "#5A1414", secondary: "#FFB612" },
 };
+
+
+const LOCAL_RANKINGS = [
+  { rank: 1, team_name: "Pittsburgh Steelers" },
+  { rank: 2, team_name: "Philadelphia Eagles" },
+  { rank: 3, team_name: "New York Giants" },
+  { rank: 4, team_name: "Cincinnati Bengals" },
+  { rank: 5, team_name: "Tennessee Titans" },
+  { rank: 6, team_name: "Seattle Seahawks" },
+  { rank: 7, team_name: "New Orleans Saints" },
+  { rank: 8, team_name: "Los Angeles Chargers" },
+  { rank: 9, team_name: "Denver Broncos" },
+  { rank: 10, team_name: "Buffalo Bills" },
+  { rank: 11, team_name: "Kansas City Chiefs" },
+  { rank: 12, team_name: "Cleveland Browns" },
+  { rank: 13, team_name: "Houston Texans" },
+  { rank: 14, team_name: "Miami Dolphins" },
+  { rank: 15, team_name: "Minnesota Vikings" },
+  { rank: 16, team_name: "Washington Commanders" },
+  { rank: 17, team_name: "New York Jets" },
+  { rank: 18, team_name: "Los Angeles Rams" },
+  { rank: 19, team_name: "Carolina Panthers" },
+  { rank: 20, team_name: "Baltimore Ravens" },
+  { rank: 21, team_name: "Detroit Lions" },
+  { rank: 22, team_name: "Tampa Bay Buccaneers" },
+  { rank: 23, team_name: "Las Vegas Raiders" },
+  { rank: 24, team_name: "Arizona Cardinals" },
+  { rank: 25, team_name: "Dallas Cowboys" },
+  { rank: 26, team_name: "New England Patriots" },
+  { rank: 27, team_name: "San Francisco 49ers" },
+  { rank: 28, team_name: "Jacksonville Jaguars" },
+  { rank: 29, team_name: "Atlanta Falcons" },
+  { rank: 30, team_name: "Green Bay Packers" },
+  { rank: 31, team_name: "Chicago Bears" },
+  { rank: 32, team_name: "Indianapolis Colts" },
+];
 
 const ALIAS_MAP = {
   chiefs: "chiefs", broncos: "broncos", raiders: "raiders", chargers: "chargers", bengals: "bengals", ravens: "ravens",
@@ -326,13 +411,13 @@ async function loadAll() {
   state.teams = applyDerivedLeagueStats(baseTeams, normalizedSchedule);
   state.rankings = (rankingsRes?.data || []).map((r) => ({ ...r, team_name: canonicalTeamName(r.team_name), abbr: teamAbbr(r.team_name) }));
   if (!state.rankings.length) {
-    state.rankings = standingsRows().slice(0, 10).map((t, idx) => ({
-      id: `fallback-${idx + 1}`,
-      week: 1,
-      rank: idx + 1,
-      team_name: t.name,
+    state.rankings = LOCAL_RANKINGS.map((r) => ({
+      id: `fallback-${r.rank}`,
+      week: 3,
+      rank: r.rank,
+      team_name: r.team_name,
       previous_rank: null,
-      note: "Placeholder ranking until the commissioner publishes Week 1.",
+      note: "",
     }));
   }
   state.news = newsRes?.data?.length ? newsRes.data : [{
@@ -829,13 +914,19 @@ function renderHistory() {
 
 function renderRules() {
   const rules = state.settings.rules || DEFAULT_SETTINGS.rules;
+  const body = escapeHtml(rules.body || "Add rules in the commissioner dashboard.").replace(/\n/g, "<br/>");
   app.innerHTML = `
     <section class="section">
-      <div class="panel">
-        <div class="kicker">Rules</div>
-        <h2>${escapeHtml(rules.title || "Rules")}</h2>
-        <p>${escapeHtml(rules.body || "Add rules in the commissioner dashboard.")}</p>
-      </div>
+      <article class="card" style="padding:28px">
+        <div class="section-head" style="margin-bottom:18px">
+          <div>
+            <div class="kicker">Rules</div>
+            <h2>${escapeHtml(rules.title || "Rules")}</h2>
+          </div>
+          <img src="./assets/league-logo.jpeg" alt="NTFL logo" style="width:74px;height:74px;object-fit:contain;filter:drop-shadow(0 6px 20px rgba(0,0,0,.25));"/>
+        </div>
+        <div style="white-space:pre-line;line-height:1.7;max-width:980px;font-size:1rem">${body}</div>
+      </article>
     </section>
   `;
 }
