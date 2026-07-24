@@ -120,7 +120,7 @@ for each row execute function public.updated_at_column();
 
 create table if not exists public.awards (
   id uuid primary key default gen_random_uuid(),
-  season text not null default 'Season 4',
+  season text not null default 'Season 3',
   award_name text not null,
   winner text not null,
   note text not null default '',
@@ -134,7 +134,7 @@ for each row execute function public.updated_at_column();
 
 create table if not exists public.history_items (
   id uuid primary key default gen_random_uuid(),
-  season text not null default 'Season 4',
+  season text not null default 'Season 3',
   title text not null,
   body text not null,
   image_url text not null default '',

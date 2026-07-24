@@ -105,7 +105,7 @@ values
 ('w3-vikings-lions', 'W3', 3, null, null, 'Detroit Lions', 'Minnesota Vikings', null, null, 'scheduled', false, null, 'NFC North', null),
 ('w3-bears-packers', 'W3', 3, null, null, 'Green Bay Packers', 'Chicago Bears', null, null, 'scheduled', false, null, 'NFC North', null),
 ('w3-steelers-ravens', 'W3', 3, null, null, 'Baltimore Ravens', 'Pittsburgh Steelers', null, null, 'scheduled', false, null, 'AFC North', null),
-('w3-rams-seahawks', 'W3', 3, null, null, 'Seattle Seahawks', 'Los Angeles Rams', null, null, 'scheduled', false, null, 'NFC West', null),
+('w3-rams-seahawks', 'W3', 3, null, null, 'Seattle Seahawks', 'Los Angeles Rams', 49, 13, 'final', false, null, 'NFC West', null),
 ('w3-titans-texans', 'W3', 3, null, null, 'Houston Texans', 'Tennessee Titans', null, null, 'scheduled', false, null, 'AFC South', null),
 ('w4-chiefs-buccaneers', 'W4', 4, null, null, 'Tampa Bay Buccaneers', 'Kansas City Chiefs', null, null, 'scheduled', false, null, 'NFC South', null),
 ('w4-commanders-cardinals', 'W4', 4, null, null, 'Arizona Cardinals', 'Washington Commanders', null, null, 'scheduled', false, null, 'NFC West', null),
@@ -345,5 +345,106 @@ on conflict (id) do update set
   spotlight = excluded.spotlight,
   source_sheet = excluded.source_sheet,
   note = excluded.note;
+
+
+insert into public.rankings (id, week, rank, team_name, previous_rank, note, updated_at, created_at)
+values
+('85acba99-0937-5e1b-bd05-4372973c2c4c', 3, 1, 'Pittsburgh Steelers', null, '', now(), now()),
+('61cc23a2-f341-5031-89c7-c19e515cf7b7', 3, 2, 'Philadelphia Eagles', null, '', now(), now()),
+('e5b582db-2694-5503-b3e6-2b01f2af8f87', 3, 3, 'New York Giants', null, '', now(), now()),
+('d875e30f-7a7b-5afd-89f8-4639319dcdef', 3, 4, 'Cincinnati Bengals', null, '', now(), now()),
+('56204f29-e7f2-5ce8-b569-e588261035da', 3, 5, 'Tennessee Titans', null, '', now(), now()),
+('9b95c40e-1d93-5c18-a1c2-344e6324d448', 3, 6, 'Seattle Seahawks', null, '', now(), now()),
+('0512435d-9b54-5d42-a833-3dfb6d6350c9', 3, 7, 'New Orleans Saints', null, '', now(), now()),
+('0848335b-9e90-5aed-a1ea-16ec39f33599', 3, 8, 'Los Angeles Chargers', null, '', now(), now()),
+('85d93a50-84e0-5e91-8f4c-df9e6ab43f33', 3, 9, 'Denver Broncos', null, '', now(), now()),
+('c9e961b5-b29b-5797-9f3b-c8da266efd65', 3, 10, 'Buffalo Bills', null, '', now(), now()),
+('2084e217-5a7e-5148-91aa-164508b22892', 3, 11, 'Kansas City Chiefs', null, '', now(), now()),
+('405f6249-2a2f-5b26-976a-1f795ba96b9e', 3, 12, 'Cleveland Browns', null, '', now(), now()),
+('cf257fe8-34d6-5876-9746-a066e37288df', 3, 13, 'Houston Texans', null, '', now(), now()),
+('982879c2-722e-57d0-9b49-9f864b001dd2', 3, 14, 'Miami Dolphins', null, '', now(), now()),
+('af23a1a2-28a2-5cfe-8d39-b1619962ff55', 3, 15, 'Minnesota Vikings', null, '', now(), now()),
+('4f32d872-5a80-5cb4-9295-3ab6ba6985cf', 3, 16, 'Washington Commanders', null, '', now(), now()),
+('fa747b15-3214-5fb4-97c8-63556017035c', 3, 17, 'New York Jets', null, '', now(), now()),
+('ccee08d6-a2ad-5dca-8066-86697e37c6ad', 3, 18, 'Los Angeles Rams', null, '', now(), now()),
+('3e24842c-3384-502c-a262-9acb7115d26b', 3, 19, 'Carolina Panthers', null, '', now(), now()),
+('cbe87607-8f1b-5da1-97f1-2ffa0cf156fc', 3, 20, 'Baltimore Ravens', null, '', now(), now()),
+('3c562c48-7870-5f9b-93cf-373a9989c90c', 3, 21, 'Detroit Lions', null, '', now(), now()),
+('7d129f62-f06f-5fab-aa58-1f11cb3c1031', 3, 22, 'Tampa Bay Buccaneers', null, '', now(), now()),
+('82a91579-c683-546f-b903-713e3aeb90a6', 3, 23, 'Las Vegas Raiders', null, '', now(), now()),
+('7bed1ff0-34bc-5cb6-b4df-d70ec0c9bff7', 3, 24, 'Arizona Cardinals', null, '', now(), now()),
+('9bc2dff4-126d-58e2-84f2-9b09641620f1', 3, 25, 'Dallas Cowboys', null, '', now(), now()),
+('14206b6d-2d23-557a-9fdb-8722a33c251d', 3, 26, 'New England Patriots', null, '', now(), now()),
+('aef5a84a-b07d-5d78-a2e0-e659c5927814', 3, 27, 'San Francisco 49ers', null, '', now(), now()),
+('d7e69d57-f449-5a50-b9e6-be4dd03632da', 3, 28, 'Jacksonville Jaguars', null, '', now(), now()),
+('25325557-69db-5d9e-bf20-8655e6531259', 3, 29, 'Atlanta Falcons', null, '', now(), now()),
+('5d1d551f-6296-5712-b075-6aa7d155c992', 3, 30, 'Green Bay Packers', null, '', now(), now()),
+('adc69dbb-07a5-55bb-a137-a7eb09bf2fba', 3, 31, 'Chicago Bears', null, '', now(), now()),
+('cd3ee574-e9df-5d09-ba55-5dbb572f7d95', 3, 32, 'Indianapolis Colts', null, '', now(), now())
+on conflict (id) do update set
+  week = excluded.week,
+  rank = excluded.rank,
+  team_name = excluded.team_name,
+  previous_rank = excluded.previous_rank,
+  note = excluded.note,
+  updated_at = excluded.updated_at,
+  created_at = excluded.created_at;
+
+
+insert into public.site_settings (key, value)
+values
+  ('rules', jsonb_build_object(
+    'title', 'NTFL SEASON 3',
+    'body', $$OFFICIAL RULES & POLICIES
+
+JERSEYS & LOGOS
+
+• The Home Team has first choice of uniform selection. If the Home Team elects to wear a colored jersey, the Away Team must wear white, and vice versa.
+
+• Uniform selections must be submitted to the Commissioner before the weekly deadline. Failure to submit a request will result in the team's default Home/Away uniform being used.
+
+• Available logos and uniform options are based on NFL uniforms worn during the 2024-25 and 2025-26 seasons. Uniforms not worn during those seasons will not be available at the launch of Season 3 but may be added in future updates.
+
+• An official Uniform Directory will be provided listing all available Home, Away, Alternate, and Combo uniforms.
+
+ALTERNATE UNIFORMS
+
+• Alternate uniforms are intended to be used realistically and may not be excessively worn.
+
+• Each franchise is limited to four (4) Alternate Uniform appearances per season.
+
+• The four-use limit applies to all Alternate Uniforms combined, not each Alternate individually.
+
+• Teams are responsible for monitoring and managing their Alternate Uniform usage.
+
+UNIFORM COMBOS
+
+• A Uniform Combo is a combination of approved jerseys, pants, and socks used by the real NFL franchise.
+
+• Available Combo uniforms will be listed within the official Uniform Directory.
+
+ACCOUNT POLICY
+
+• Each franchise is permitted one (1) primary account and up to three (3) alternate accounts.
+
+• Use of accounts beyond the league limit may result in penalties determined by league administration.
+
+COMPETITIVE INTEGRITY
+
+• The purchasing, botting, or artificial inflation of likes, votes, views, or engagement is strictly prohibited.
+
+• Any engagement determined to be fraudulent will be removed from league records.
+
+• Coaches found responsible for engagement manipulation will be subject to disciplinary action in accordance with league protocol.
+
+• Fan accounts involved in engagement manipulation may face restrictions, removal, or other corrective actions as determined by league administration.
+
+LEAGUE AUTHORITY
+
+• NTFL Administration reserves the right to investigate suspicious activity, interpret league rules, and issue disciplinary action when necessary to preserve fairness, realism, and competitive integrity throughout the season.$$ 
+  )),
+  ('season_banner', jsonb_build_object('title', 'Season 3 Week 1', 'subtitle', 'NTFL Network')),
+  ('home_banner', jsonb_build_object('headline', 'Where the NTFL collides', 'cta', 'Commissioner Control Center'))
+on conflict (key) do update set value = excluded.value;
 
 commit;
