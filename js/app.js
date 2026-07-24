@@ -175,17 +175,122 @@ function normalizeTeamRow(row = {}) {
 function normalizeGameRow(row = {}) {
   const home = canonicalTeamName(row.home_team_name || row.home_team);
   const away = canonicalTeamName(row.away_team_name || row.away_team);
+  const homeScore = row.home_score === null || row.home_score === undefined || row.home_score === "" ? null : Number(row.home_score);
+  const awayScore = row.away_score === null || row.away_score === undefined || row.away_score === "" ? null : Number(row.away_score);
+  const inferredStatus = homeScore !== null && awayScore !== null ? "final" : "scheduled";
   return {
     ...row,
     home_team_name: home,
     away_team_name: away,
     week: row.week || `W${row.week_number || 1}`,
     week_number: Number(row.week_number || String(row.week || "1").replace(/\D/g, "") || 1),
-    status: row.status || "scheduled",
+    status: row.status && row.status !== "scheduled" ? row.status : inferredStatus,
     is_live: Boolean(row.is_live),
-    home_score: row.home_score === null || row.home_score === undefined || row.home_score === "" ? null : Number(row.home_score),
-    away_score: row.away_score === null || row.away_score === undefined || row.away_score === "" ? null : Number(row.away_score),
+    home_score: homeScore,
+    away_score: awayScore,
   };
+}
+
+function baseTeamStats() {
+  return {
+    wins: 0,
+    losses: 0,
+    ties: 0,
+    points_for: 0,
+    points_against: 0,
+    games_played: 0,
+    ppg_for: null,
+    ppg_against: null,
+    streak: "",
+    streak_type: null,
+    streak_count: 0,
+    last_result: null,
+  };
+}
+
+function applyStreak(stat, result) {
+  if (stat.last_result !== result) {
+    stat.streak_type = result;
+    stat.streak_count = 1;
+  } else {
+    stat.streak_count += 1;
+  }
+  stat.last_result = result;
+  stat.streak = `${stat.streak_type}${stat.streak_count}`;
+}
+
+function buildDerivedStats(scheduleRows = [], teamRows = []) {
+  const stats = new Map();
+  const ensure = (teamName) => {
+    const key = canonicalTeamName(teamName);
+    if (!stats.has(key)) stats.set(key, { ...baseTeamStats(), name: key });
+    return stats.get(key);
+  };
+
+  teamRows.forEach((row) => ensure(row?.name || row?.team_name || row?.abbr));
+  const orderedGames = [...scheduleRows].sort((a, b) => {
+    const wk = Number(a.week_number || 0) - Number(b.week_number || 0);
+    if (wk !== 0) return wk;
+    return String(a.id || "").localeCompare(String(b.id || ""));
+  });
+
+  for (const game of orderedGames) {
+    const homeScore = game.home_score === null || game.home_score === undefined ? null : Number(game.home_score);
+    const awayScore = game.away_score === null || game.away_score === undefined ? null : Number(game.away_score);
+    if (homeScore === null || awayScore === null) continue;
+
+    const home = ensure(game.home_team_name);
+    const away = ensure(game.away_team_name);
+
+    home.games_played += 1;
+    away.games_played += 1;
+    home.points_for += homeScore;
+    home.points_against += awayScore;
+    away.points_for += awayScore;
+    away.points_against += homeScore;
+
+    if (homeScore > awayScore) {
+      home.wins += 1;
+      away.losses += 1;
+      applyStreak(home, "W");
+      applyStreak(away, "L");
+    } else if (awayScore > homeScore) {
+      home.losses += 1;
+      away.wins += 1;
+      applyStreak(home, "L");
+      applyStreak(away, "W");
+    } else {
+      home.ties += 1;
+      away.ties += 1;
+      applyStreak(home, "T");
+      applyStreak(away, "T");
+    }
+  }
+
+  for (const stat of stats.values()) {
+    stat.ppg_for = stat.games_played ? Number((stat.points_for / stat.games_played).toFixed(2)) : null;
+    stat.ppg_against = stat.games_played ? Number((stat.points_against / stat.games_played).toFixed(2)) : null;
+  }
+  return stats;
+}
+
+function applyDerivedLeagueStats(teamRows = [], scheduleRows = []) {
+  const derived = buildDerivedStats(scheduleRows, teamRows);
+  return teamRows.map((row) => {
+    const key = canonicalTeamName(row.name || row.team_name || row.abbr);
+    const stat = derived.get(key) || baseTeamStats();
+    return {
+      ...row,
+      wins: stat.wins,
+      losses: stat.losses,
+      ties: stat.ties,
+      points_for: stat.points_for,
+      points_against: stat.points_against,
+      ppg_for: stat.ppg_for,
+      ppg_against: stat.ppg_against,
+      streak: stat.streak || row.streak || "",
+    };
+  });
 }
 
 async function readJson(path) {
@@ -214,11 +319,14 @@ async function loadAll() {
 
   const teams = teamRes?.data || [];
   const schedule = scheduleRes?.data || [];
-  state.teams = (teams.length ? teams : localTeams).map(normalizeTeamRow);
-  state.schedule = (schedule.length ? schedule : localSchedule).map(normalizeGameRow);
-  state.rankings = (rankingsRes?.data || []).map(r => ({ ...r, team_name: canonicalTeamName(r.team_name), abbr: teamAbbr(r.team_name) }));
+  const normalizedSchedule = (schedule.length ? schedule : localSchedule).map(normalizeGameRow);
+  const baseTeams = (teams.length ? teams : localTeams).map(normalizeTeamRow);
+
+  state.schedule = normalizedSchedule;
+  state.teams = applyDerivedLeagueStats(baseTeams, normalizedSchedule);
+  state.rankings = (rankingsRes?.data || []).map((r) => ({ ...r, team_name: canonicalTeamName(r.team_name), abbr: teamAbbr(r.team_name) }));
   if (!state.rankings.length) {
-    state.rankings = state.teams.slice(0, 10).map((t, idx) => ({
+    state.rankings = standingsRows().slice(0, 10).map((t, idx) => ({
       id: `fallback-${idx + 1}`,
       week: 1,
       rank: idx + 1,
@@ -1025,7 +1133,7 @@ async function seedSupabase() {
     away_team_name: canonicalTeamName(g.away_team_name || g.away_team),
     home_score: g.home_score ?? null,
     away_score: g.away_score ?? null,
-    status: g.status || "scheduled",
+    status: g.status || ((g.home_score !== null && g.home_score !== undefined && g.away_score !== null && g.away_score !== undefined) ? "final" : "scheduled"),
     is_live: Boolean(g.is_live),
     spotlight: Boolean(g.spotlight),
     source_sheet: g.source_sheet || "",
@@ -1076,6 +1184,10 @@ function bindAdminActions() {
     });
     data.home_team_name = canonicalTeamName(data.home_team_name);
     data.away_team_name = canonicalTeamName(data.away_team_name);
+    if (data.home_score !== null && data.home_score !== undefined && data.away_score !== null && data.away_score !== undefined && data.status !== "postponed" && data.status !== "cancelled") {
+      data.status = "final";
+      data.is_live = false;
+    }
     const { error } = await supabase.from("schedule_games").upsert(data, { onConflict: "id" });
     if (error) return alert(error.message);
     location.reload();
